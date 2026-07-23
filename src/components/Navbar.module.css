@@ -1,0 +1,104 @@
+.nav {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--r-lg);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--sh-sm);
+  position: sticky;
+  top: 10px;
+  z-index: 50;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  margin-right: auto;
+  flex-shrink: 0;
+}
+
+.icon {
+  width: 34px; height: 34px;
+  background: var(--b600);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--b700);
+  letter-spacing: -0.02em;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.userPill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--b50);
+  border: 1px solid var(--b100);
+  border-radius: 100px;
+  padding: 4px 12px 4px 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.userPill:hover { background: var(--b100); }
+
+.avatar {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--b600);
+  color: white;
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.userName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--b700);
+}
+
+.signOutBtn {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  border: 1.5px solid var(--border2);
+  background: transparent;
+  color: var(--text3);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+
+.signOutBtn:hover {
+  background: var(--r50);
+  color: var(--r600);
+  border-color: var(--r200);
+}
+
+@media (max-width: 640px) {
+  .nav { flex-wrap: wrap; padding: 10px 12px; gap: 8px; }
+  .brand { flex: 1; }
+  .right { order: 2; }
+  .tabs { order: 3; width: 100%; border-top: 1px solid var(--border); padding-top: 8px; gap: 4px; }
+  .tabs button { flex: 1; justify-content: center !important; font-size: 12px !important; }
+  .userName { display: none; }
+  .userPill { padding: 4px; border-radius: 50%; }
+}

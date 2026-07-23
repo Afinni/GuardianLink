@@ -1,0 +1,111 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.left {
+  position: relative;
+  background: linear-gradient(150deg, var(--b900) 0%, var(--b700) 50%, var(--b500) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 48px;
+}
+
+.circles {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 85%, rgba(255,255,255,0.07) 0%, transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(255,255,255,0.05) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.leftInner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo {
+  width: 64px; height: 64px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: var(--r-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+
+.brand {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.03em;
+}
+
+.motto {
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.02em;
+  font-style: italic;
+}
+
+.right {
+  background: var(--page);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--r-2xl);
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--sh-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.modeSwitch {
+  font-size: 13px;
+  color: var(--text3);
+  text-align: right;
+}
+
+.switchBtn {
+  background: none;
+  border: none;
+  color: var(--b600);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.switchBtn:hover { color: var(--b800); text-decoration: underline; }
+
+@media (max-width: 768px) {
+  .page { grid-template-columns: 1fr; }
+  .left { display: none; }
+  .right { padding: 24px 16px; align-items: flex-start; padding-top: 48px; }
+}
+
+@media (max-width: 420px) {
+  .card { padding: 28px 18px; border-radius: var(--r-lg); }
+}
