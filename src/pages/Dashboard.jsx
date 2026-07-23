@@ -1,6 +1,7 @@
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import { Users, Wifi, AlertTriangle, Radio, Plus, Camera } from "lucide-react";
+import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import UserCard from "../components/UserCard";
 import MapView from "../components/MapView";
@@ -104,12 +105,16 @@ export default function Dashboard() {
 
 function StatCard({ icon, value, label, color, sub }) {
   return (
-    <div className={`${styles.stat} ${styles[color]}`}>
+    <motion.div 
+      whileHover={{ y: -2, boxShadow: "var(--shadow-md)" }}
+      transition={{ duration: 0.2 }}
+      className={`${styles.stat} ${styles[color]}`}
+    >
       <div className={styles.statIcon}>{icon}</div>
       <div className={styles.statVal}>{value}</div>
       <div className={styles.statLbl}>{label}</div>
       {sub && <div style={{ fontSize: "10px", marginTop: "4px", opacity: 0.8, color: "currentColor" }}>{sub}</div>}
-    </div>
+    </motion.div>
   );
 }
 

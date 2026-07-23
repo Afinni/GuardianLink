@@ -1,4 +1,6 @@
 import { useApp } from "../context/AppContext";
+import { motion } from "framer-motion";
+import { MapPin, Clock, Smartphone } from "lucide-react";
 import styles from "./UserCard.module.css";
 
 export default function UserCard({ user }) {
@@ -6,7 +8,10 @@ export default function UserCard({ user }) {
   const selected = user.id === selectedUserId;
 
   return (
-    <div
+    <motion.div
+      whileHover={{ y: -2, boxShadow: "var(--shadow-md)", borderColor: "var(--b300)" }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.2 }}
       className={`${styles.card} ${selected ? styles.selected : ""}`}
       onClick={() => setSelectedUserId(user.id)}
       role="button" tabIndex={0}
@@ -27,18 +32,18 @@ export default function UserCard({ user }) {
       </div>
 
       <div className={styles.meta}>
-        <MetaRow icon="" text={user.area || user.address || "—"} />
-        <MetaRow icon="" text={user.lastUpdate || "—"} />
-        <MetaRow icon="" text={user.deviceId || "—"} />
+        <MetaRow icon={<MapPin size={14} strokeWidth={1.75} />} text={user.area || user.address || "—"} />
+        <MetaRow icon={<Clock size={14} strokeWidth={1.75} />} text={user.lastUpdate || "—"} />
+        <MetaRow icon={<Smartphone size={14} strokeWidth={1.75} />} text={user.deviceId || "—"} />
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function MetaRow({ icon, text }) {
   return (
     <div className={styles.metaRow}>
-      <span style={{ fontSize: 11 }}>{icon}</span>
+      <span className={styles.metaIcon}>{icon}</span>
       <span>{text}</span>
     </div>
   );

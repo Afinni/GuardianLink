@@ -1,21 +1,44 @@
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { AlertTriangle, Camera } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import AuthorityModal from "./AuthorityModal";
 import styles from "./EmergencyModal.module.css";
 
 export default function EmergencyModal() {
   const { emergency, dismissEmergency } = useApp();
   const [showRespond, setShowRespond] = useState(false);
-  if (!emergency) return null;
-
-  const { user, time, date, lat, lng, snapshotUrl } = emergency;
-  const hasLocation = lat !== null && lng !== null;
+  
+  const user = emergency?.user;
+  const time = emergency?.time;
+  const date = emergency?.date;
+  const lat = emergency?.lat;
+  const lng = emergency?.lng;
+  const snapshotUrl = emergency?.snapshotUrl;
+  
+  const hasLocation = lat !== undefined && lat !== null && lng !== null;
 
   return (
-    <div className={styles.overlay} role="alertdialog" aria-modal="true" aria-label="Emergency alert">
-      <div className={styles.modal}>
-        {/* Header */}
+    <AnimatePresence>
+      {emergency && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className={styles.overlay} 
+          role="alertdialog" 
+          aria-modal="true" 
+          aria-label="Emergency alert"
+        >
+          <motion.div 
+            initial={{ scale: 0.95, y: 10 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.95, y: 10 }}
+            transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+            className={styles.modal}
+          >
+            {/* Header */}
         <div className={styles.header}>
           <div className={styles.pulse}><AlertTriangle size={24} strokeWidth={2} color="var(--r500)" /></div>
           <div>
@@ -62,15 +85,20 @@ export default function EmergencyModal() {
           <button className={styles.btnAck} onClick={() => setShowRespond(true)}>Acknowledge & Respond</button>
           <button className={styles.btnDismiss} onClick={dismissEmergency}>Dismiss</button>
         </div>
-      </div>
-      {showRespond && (
-        <AuthorityModal
-          mode="emergency"
-          emergency={emergency}
-          onClose={() => { setShowRespond(false); dismissEmergency(); }}
-        />
+        </motion.div>
+        
+        <AnimatePresence>
+          {showRespond && (
+            <AuthorityModal
+              mode="emergency"
+              emergency={emergency}
+              onClose={() => { setShowRespond(false); dismissEmergency(); }}
+            />
+          )}
+        </AnimatePresence>
+      </motion.div>
       )}
-    </div>
+    </AnimatePresence>
   );
 }
 

@@ -1,12 +1,12 @@
 .nav {
-  background: var(--card);
-  border: 1px solid var(--border2);
-  border-radius: var(--r-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
   padding: 10px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: var(--sh-sm);
+  box-shadow: var(--shadow-sm);
   position: sticky;
   top: 10px;
   z-index: 50;
@@ -47,6 +47,12 @@
   flex-shrink: 0;
 }
 
+.desktopRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .userPill {
   display: flex;
   align-items: center;
@@ -80,11 +86,12 @@
 .signOutBtn {
   width: 34px; height: 34px;
   border-radius: 9px;
-  border: 1.5px solid var(--border2);
+  border: 1.5px solid var(--border-subtle);
   background: transparent;
-  color: var(--text3);
+  color: var(--text-tertiary);
   display: flex; align-items: center; justify-content: center;
   transition: all 0.15s;
+  cursor: pointer;
 }
 
 .signOutBtn:hover {
@@ -93,12 +100,156 @@
   border-color: var(--r200);
 }
 
+/* Mobile Specific Additions */
+.mobileRight {
+  display: none;
+  position: relative;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  width: 220px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+}
+
+.dropdownHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+}
+
+.dropdownUserInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdownName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.dropdownRole {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.dropdownDivider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 8px 0;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  width: 100%;
+}
+
+.dropdownItem:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.dropdownItem.danger:hover {
+  background: var(--r50);
+  color: var(--r600);
+}
+
+.bottomNav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-subtle);
+  padding: 8px 16px 20px;
+  z-index: 100;
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+}
+
+.bottomNavTab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.bottomNavIconWrapper {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.bottomNavTab:hover .bottomNavIconWrapper {
+  background: var(--n100);
+}
+
+.activeTab {
+  color: var(--b600);
+}
+
+.activeTab .bottomNavIconWrapper {
+  background: var(--b50);
+  color: var(--b600);
+}
+
+.bottomNavBadge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--r500);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  border: 1.5px solid var(--bg-card);
+}
+
 @media (max-width: 640px) {
-  .nav { flex-wrap: wrap; padding: 10px 12px; gap: 8px; }
-  .brand { flex: 1; }
-  .right { order: 2; }
-  .tabs { order: 3; width: 100%; border-top: 1px solid var(--border); padding-top: 8px; gap: 4px; }
-  .tabs button { flex: 1; justify-content: center !important; font-size: 12px !important; }
-  .userName { display: none; }
-  .userPill { padding: 4px; border-radius: 50%; }
+  .nav { padding: 10px 12px; }
+  .tabs { display: none; }
+  .desktopRight { display: none; }
+  .mobileRight { display: block; }
+  .bottomNav { display: flex; justify-content: space-around; }
 }

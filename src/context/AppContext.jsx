@@ -21,6 +21,8 @@ export function AppProvider({ children }) {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [alerts, setAlerts]                 = useState([]);
   const [systemStatus, setSystemStatus]     = useState(null);
+  const [waypoints, setWaypoints]           = useState({});
+  const waypointsRef = useRef({});
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (fu) => {
@@ -70,15 +72,28 @@ export function AppProvider({ children }) {
     );
     const unsub = onSnapshot(q, (snap) => {
       if (!snap.empty) {
-        const d = snap.docs[0]; const data = d.data();
+        const docs = snap.docs.map(d => ({ docId: d.id, ...d.data() }));
+        docs.sort((a, b) => {
+          const ta = a.timestamp?.toMillis ? a.timestamp.toMillis() : new Date(a.timestamp || 0).getTime();
+          const tb = b.timestamp?.toMillis ? b.timestamp.toMillis() : new Date(b.timestamp || 0).getTime();
+          return tb - ta;
+        });
+        const data = docs[0];
+
         const user = users.find(u => u.id === data.userId);
+        // Extract image URL from either property and handle string "null" or "None"
+        let imgUrl = data.snapshotUrl || data.photoUrl || null;
+        if (imgUrl === "null" || imgUrl === "None") imgUrl = null;
+        
         setEmergency({
-          docId: d.id, user: user || { firstName: "Unknown", lastName: "", deviceId: "—", area: "—" },
+          docId: data.docId, user: user || { firstName: "Unknown", lastName: "", deviceId: "—", area: "—" },
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
           lat: data.lat ?? null, lng: data.lng ?? null,
-          snapshotUrl: data.snapshotUrl ?? null, // camera snapshot from hardware
+          snapshotUrl: imgUrl, // camera snapshot from hardware
         });
+      } else {
+        setEmergency(null);
       }
     });
     return unsub;
@@ -150,6 +165,45 @@ export function AppProvider({ children }) {
 
     return () => unsubscribe();
   }, []);
+
+  // Background LiveLocation Tracker for Waypoints
+  useEffect(() => {
+    if (!caregiver) return;
+    const globalRef = ref(rtdb, "LiveLocation");
+    const unsubscribe = onValue(globalRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        let newWaypoints = { ...waypointsRef.current };
+        
+        Object.keys(data).forEach(key => {
+          if (typeof data[key] === 'object' && data[key].latitude) {
+            const id = key;
+            const pt = [data[key].latitude, data[key].longitude];
+            if (!newWaypoints[id]) newWaypoints[id] = [];
+            const last = newWaypoints[id][newWaypoints[id].length - 1];
+            if (!last || last[0] !== pt[0] || last[1] !== pt[1]) {
+              newWaypoints[id] = [...newWaypoints[id], pt];
+            }
+          }
+        });
+        
+        if (data.latitude) {
+          const pt = [data.latitude, data.longitude];
+          users.forEach(u => {
+            if (!newWaypoints[u.id]) newWaypoints[u.id] = [];
+            const last = newWaypoints[u.id][newWaypoints[u.id].length - 1];
+            if (!last || last[0] !== pt[0] || last[1] !== pt[1]) {
+              newWaypoints[u.id] = [...newWaypoints[u.id], pt];
+            }
+          });
+        }
+        
+        waypointsRef.current = newWaypoints;
+        setWaypoints(newWaypoints);
+      }
+    });
+    return () => unsubscribe();
+  }, [caregiver, users]);
 
   async function respondToAlert(alertId, authorityName, authorityEmail, message, photoUrl, lat, lng) {
     try {
@@ -303,7 +357,7 @@ export function AppProvider({ children }) {
       emergency, triggerEmergency, dismissEmergency,
       selectedUserId, setSelectedUserId, selectedUser,
       alerts, respondToAlert, clearAlert, systemStatus,
-      removeUser,
+      removeUser, waypoints
     }}>
       {children}
     </Ctx.Provider>

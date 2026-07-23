@@ -2,7 +2,25 @@ import { useState, useEffect } from "react";
 import { ref, get } from "firebase/database";
 import { rtdb } from "../firebase";
 import { MapPin, Satellite, ExternalLink } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
 import styles from "./MapView.module.css";
+
+const createIcon = () => {
+  const svg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="10" fill="var(--b500)" stroke="white" stroke-width="2"/>
+    <circle cx="12" cy="12" r="4" fill="white"/>
+  </svg>`;
+  
+  return L.divIcon({
+    html: svg,
+    className: styles.customMarker,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12]
+  });
+};
 
 export default function MapView({ users, selectedId }) {
   const [liveLocations, setLiveLocations] = useState([]);
@@ -63,116 +81,73 @@ export default function MapView({ users, selectedId }) {
   };
 
   const currentLocation = liveLocations[0];
-  const googleMapsUrl = currentLocation
-    ? `https://www.google.com/maps/?q=${currentLocation.latitude},${currentLocation.longitude}`
-    : null;
 
   return (
     <div className={styles.wrap}>
-      <div style={{
-        width: "100%",
-        height: "220px",
-        borderRadius: "14px",
-        overflow: "hidden",
-        backgroundColor: "#EFF6FF",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-        padding: "20px",
-        boxSizing: "border-box",
-        fontFamily: "Sora, sans-serif",
-      }}>
-        {loading ? (
-          <div style={{ color: "#60A5FA", fontSize: "14px" }}>
-            Loading live location...
-          </div>
-        ) : currentLocation ? (
-          <div style={{ textAlign: "center" }}>
-            <div style={{
-              fontSize: "18px",
-              fontWeight: "600",
-              color: "var(--b700)",
-              marginBottom: "12px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px"
-            }}>
-              <MapPin size={20} strokeWidth={2} /> Current Location
+      <AnimatePresence mode="wait">
+        <motion.div 
+          key={selectedId}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className={styles.mapContainer}
+        >
+          {loading ? (
+            <div className={styles.statusText}>
+              Loading live location...
             </div>
-            <div style={{
-              fontSize: "13px",
-              color: "var(--b500)",
-              marginBottom: "8px",
-              fontFamily: "var(--font-mono)",
-            }}>
-              <div>Latitude: {currentLocation.latitude.toFixed(6)}</div>
-              <div>Longitude: {currentLocation.longitude.toFixed(6)}</div>
-              {currentLocation.satellites_locked && (
-                <div style={{ marginTop: "4px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
-                  <Satellite size={14} strokeWidth={1.75} /> Satellites: {currentLocation.satellites_locked}
-                </div>
-              )}
-            </div>
-            {googleMapsUrl && (
-              <a
-                href={googleMapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "inline-block",
-                  marginTop: "12px",
-                  padding: "8px 16px",
-                  backgroundColor: "#3B82F6",
-                  color: "white",
-                  textDecoration: "none",
-                  borderRadius: "6px",
-                  fontSize: "12px",
-                  fontWeight: "500",
-                  transition: "background-color 0.2s ease",
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = "var(--b700)"}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "var(--b600)"}
+          ) : currentLocation ? (
+            <MapContainer 
+              center={[currentLocation.latitude, currentLocation.longitude]} 
+              zoom={15} 
+              style={{ height: '100%', width: '100%', zIndex: 0 }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <Marker 
+                position={[currentLocation.latitude, currentLocation.longitude]}
+                icon={createIcon()}
               >
-                Open in Google Maps <ExternalLink size={12} strokeWidth={2} style={{marginLeft: 4, verticalAlign: 'middle'}} />
-              </a>
-            )}
-          </div>
-        ) : (
-          <div style={{ color: "#60A5FA", fontSize: "14px" }}>
-            No GPS data — connect a device
-          </div>
-        )}
-      </div>
+                <Popup>
+                  <div>
+                    <strong>Selected User Location</strong><br/>
+                    Lat: {currentLocation.latitude.toFixed(6)}<br/>
+                    Lng: {currentLocation.longitude.toFixed(6)}
+                  </div>
+                </Popup>
+              </Marker>
+            </MapContainer>
+          ) : (
+            <div className={styles.statusText}>
+              No GPS data — connect a device
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       <div className={styles.badge}>
         <span className={styles.dot} /> GPS Live
-        {liveLocations.length > 0 && (
-          <span style={{ fontSize: "10px", marginLeft: "8px", opacity: 0.7 }}>
-            {liveLocations.length} location{liveLocations.length !== 1 ? "s" : ""}
-          </span>
-        )}
         <button
           onClick={handleRefresh}
           disabled={loading}
-          style={{
-            marginLeft: "12px",
-            padding: "4px 8px",
-            fontSize: "11px",
-            backgroundColor: loading ? "#BFDBFE" : "#3B82F6",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.6 : 1,
-            transition: "all 0.2s ease",
-          }}
+          className={styles.refreshBtn}
         >
           {loading ? "Refreshing..." : "Refresh"}
         </button>
+        {currentLocation && (
+          <button
+            onClick={() => window.location.href = '/tracker'}
+            className={styles.refreshBtn}
+            style={{ backgroundColor: 'var(--b700)' }}
+          >
+            Open Tracker
+          </button>
+        )}
         {lastUpdate && (
-          <span style={{ fontSize: "9px", marginLeft: "8px", opacity: 0.6 }}>
+          <span className={styles.timeText}>
             {lastUpdate}
           </span>
         )}
