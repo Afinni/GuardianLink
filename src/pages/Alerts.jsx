@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Inbox, Camera, MapPin, Satellite, ArrowRight, Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../components/Navbar";
 import AuthorityModal from "../components/AuthorityModal";
 import { toast } from "sonner";
@@ -44,13 +45,7 @@ export default function Alerts() {
         </div>
 
         {/* Filter Buttons */}
-        <div style={{
-          display: "flex",
-          gap: "8px",
-          marginBottom: "24px",
-          paddingBottom: "12px",
-          borderBottom: "1px solid var(--b200)",
-        }}>
+        <div className={styles.filterBar}>
           <FilterButton
             label="All"
             active={filterStatus === "all"}
@@ -87,37 +82,41 @@ export default function Alerts() {
             </p>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {filteredAlerts.map((alert) => (
-              <AlertCard
-                key={alert.id}
-                alert={alert}
-                onClick={() => handleAlertClick(alert)}
-                isResponded={alert.responded === true}
-                onClear={(e) => {
-                  e.stopPropagation();
-                  clearAlert(alert.id);
-                  toast("Alert cleared", {
-                    description: `Alert #${alert.id.slice(0, 8)} removed from view.`,
-                    action: {
-                      label: "Undo",
-                      onClick: () => clearAlert(alert.id, true),
-                    },
-                  });
-                }}
-              />
-            ))}
-          </div>
+          <motion.div layout className={styles.alertList}>
+            <AnimatePresence initial={false}>
+              {filteredAlerts.map((alert) => (
+                <AlertCard
+                  key={alert.id}
+                  alert={alert}
+                  onClick={() => handleAlertClick(alert)}
+                  isResponded={alert.responded === true}
+                  onClear={(e) => {
+                    e.stopPropagation();
+                    clearAlert(alert.id);
+                    toast("Alert cleared", {
+                      description: `Alert #${alert.id.slice(0, 8)} removed from view.`,
+                      action: {
+                        label: "Undo",
+                        onClick: () => clearAlert(alert.id, true),
+                      },
+                    });
+                  }}
+                />
+              ))}
+            </AnimatePresence>
+          </motion.div>
         )}
       </div>
-
-      {showRespond && selectedAlert && (
-        <AuthorityModal
-          mode="alert"
-          alert={selectedAlert}
-          onClose={handleCloseRespond}
-        />
-      )}
+      
+      <AnimatePresence>
+        {showRespond && selectedAlert && (
+          <AuthorityModal
+            mode="alert"
+            alert={selectedAlert}
+            onClose={handleCloseRespond}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -126,35 +125,10 @@ function FilterButton({ label, active, count, onClick }) {
   return (
     <button
       onClick={onClick}
-      style={{
-        padding: "8px 16px",
-        borderRadius: "8px",
-        border: "1.5px solid",
-        borderColor: active ? "var(--b400)" : "var(--b200)",
-        backgroundColor: active ? "var(--b50)" : "transparent",
-        color: active ? "var(--b700)" : "var(--text2)",
-        fontWeight: active ? 600 : 400,
-        fontSize: "13px",
-        fontFamily: "var(--font)",
-        cursor: "pointer",
-        transition: "all 0.15s ease",
-        display: "flex",
-        alignItems: "center",
-        gap: "6px",
-      }}
+      className={`${styles.filterBtn} ${active ? styles.active : ""}`}
     >
       {label}
-      <span style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minWidth: "20px",
-        height: "20px",
-        borderRadius: "4px",
-        backgroundColor: active ? "var(--b200)" : "var(--b100)",
-        fontSize: "11px",
-        fontWeight: "600",
-      }}>
+      <span className={styles.filterBadge}>
         {count}
       </span>
     </button>
@@ -166,128 +140,59 @@ function AlertCard({ alert, onClick, isResponded, onClear }) {
   const alertDate = new Date(alert.timestamp).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
   const statusColor = isResponded ? "var(--g400)" : "var(--r400)";
   const statusText = isResponded ? "Responded" : "Pending";
+  
+  let imgUrl = alert.photoUrl || alert.snapshotUrl || null;
+  if (imgUrl === "null" || imgUrl === "None") imgUrl = null;
 
   return (
-    <div
+    <motion.div
+      layout
+      initial={{ opacity: 0, height: 0, overflow: "hidden" }}
+      animate={{ opacity: 1, height: "auto", overflow: "visible" }}
+      exit={{ opacity: 0, height: 0, overflow: "hidden" }}
+      transition={{ opacity: { duration: 0.2 }, height: { duration: 0.2, ease: "easeInOut" } }}
+      whileHover={!isResponded ? { y: -2, boxShadow: "var(--shadow-sm)", borderColor: "var(--b300)" } : {}}
       onClick={onClick}
-      style={{
-        display: "flex",
-        gap: "12px",
-        padding: "12px",
-        borderRadius: "10px",
-        border: "1.5px solid var(--b200)",
-        backgroundColor: isResponded ? "var(--b50)" : "white",
-        cursor: isResponded ? "default" : "pointer",
-        transition: "all 0.15s ease",
-        opacity: isResponded ? 0.7 : 1,
-      }}
-      onMouseEnter={(e) => {
-        if (!isResponded) {
-          e.currentTarget.style.borderColor = "var(--b300)";
-          e.currentTarget.style.backgroundColor = "var(--b75)";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isResponded) {
-          e.currentTarget.style.borderColor = "var(--b200)";
-          e.currentTarget.style.backgroundColor = "white";
-        }
-      }}
+      className={`${styles.alertCard} ${isResponded ? styles.responded : ""}`}
     >
       {/* Preview Image */}
-      <div style={{
-        width: "60px",
-        height: "60px",
-        borderRadius: "8px",
-        backgroundColor: "var(--b100)",
-        overflow: "hidden",
-        flexShrink: 0,
-      }}>
-        {alert.photoUrl ? (
+      <div className={styles.alertImageWrap}>
+        {imgUrl ? (
           <img
-            src={alert.photoUrl}
+            src={imgUrl}
             alt="Alert preview"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            className={styles.alertImage}
           />
         ) : (
-          <div style={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "var(--n400)"
-          }}>
-            <Camera size={24} strokeWidth={1.75} />
-          </div>
+          <Camera size={24} strokeWidth={1.75} />
         )}
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px", minWidth: 0 }}>
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "8px",
-        }}>
-          <div style={{
-            fontWeight: "600",
-            color: "var(--text)",
-            fontSize: "13px",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}>
+      <div className={styles.alertContent}>
+        <div className={styles.alertHeader}>
+          <div className={styles.alertTitle}>
             Alert #{alert.id.slice(0, 8)}
           </div>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            paddingLeft: "8px",
-            whiteSpace: "nowrap",
-          }}>
-            <div style={{
-              display: "inline-block",
-              width: "6px",
-              height: "6px",
-              borderRadius: "50%",
-              backgroundColor: statusColor,
-            }} />
-            <span style={{
-              fontSize: "11px",
-              fontWeight: "500",
-              color: statusColor,
-            }}>
+          <div className={styles.alertStatus}>
+            <div className={styles.statusDot} style={{ backgroundColor: statusColor }} />
+            <span className={styles.statusText} style={{ color: statusColor }}>
               {statusText}
             </span>
           </div>
         </div>
 
-        <div style={{
-          fontSize: "12px",
-          color: "var(--text2)",
-          display: "flex",
-          gap: "8px",
-          alignItems: "center",
-        }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <div className={styles.alertLocation}>
+          <span>
             <MapPin size={12} strokeWidth={2} /> 
             {alert.latitude?.toFixed(4)}, {alert.longitude?.toFixed(4)}
           </span>
         </div>
 
-        <div style={{
-          fontSize: "11px",
-          color: "var(--text3)",
-          display: "flex",
-          alignItems: "center",
-          gap: "4px"
-        }}>
+        <div className={styles.alertMeta}>
           {alertTime} · {alertDate}
           {alert.satellites_locked && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span>
               · <Satellite size={12} strokeWidth={2} /> {alert.satellites_locked} sats
             </span>
           )}
@@ -295,50 +200,21 @@ function AlertCard({ alert, onClick, isResponded, onClear }) {
       </div>
 
       {/* Right Arrow & Clear Button */}
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "12px",
-        flexShrink: 0,
-      }}>
+      <div className={styles.alertActions}>
         <button
           onClick={onClear}
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "var(--text3)",
-            cursor: "pointer",
-            padding: "4px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "50%",
-            transition: "all 0.15s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--r50)";
-            e.currentTarget.style.color = "var(--r600)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-            e.currentTarget.style.color = "var(--text3)";
-          }}
+          className={styles.clearBtn}
           title="Clear Alert"
         >
           <Trash2 size={16} strokeWidth={2} />
         </button>
         
         {!isResponded && (
-          <div style={{
-            color: "var(--b500)",
-            display: "flex",
-            alignItems: "center",
-          }}>
+          <div className={styles.arrowIcon}>
             <ArrowRight size={16} strokeWidth={2} />
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

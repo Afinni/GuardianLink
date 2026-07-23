@@ -176,5 +176,12 @@ a {
     scroll-behavior: auto !important;
     transition-duration: 0s !important;
     transition-delay: 0s !important;
+}
+}
+
+/* Mobile Bottom Navbar Padding */
+@media (max-width: 640px) {
+  body {
+    padding-bottom: 76px;
   }
 }

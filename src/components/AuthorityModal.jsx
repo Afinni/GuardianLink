@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
+import { motion } from "framer-motion";
 import styles from "./AuthorityModal.module.css";
 
 /**
@@ -112,8 +113,22 @@ export default function AuthorityModal({ mode, emergency, alert, onClose }) {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className={styles.overlay} role="alertdialog" aria-modal="true">
-      <div className={styles.modal}>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className={styles.overlay} 
+      role="alertdialog" 
+      aria-modal="true"
+    >
+      <motion.div 
+        initial={{ scale: 0.95, y: 10 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.95, y: 10 }}
+        transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+        className={styles.modal}
+      >
         <h2 className={styles.title}>
           {isEmergency ? "Report to Authority" : "Respond to Alert"}
         </h2>
@@ -201,8 +216,8 @@ export default function AuthorityModal({ mode, emergency, alert, onClose }) {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
